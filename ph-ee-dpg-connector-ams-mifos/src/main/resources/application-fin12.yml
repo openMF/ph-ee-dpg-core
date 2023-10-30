@@ -1,0 +1,42 @@
+camel:
+  server-port: 5000
+  springboot:
+    main-run-controller: true
+  dataformat:
+    json-jackson:
+      auto-discover-object-mapper: true
+
+dfspids: "lion"
+
+test: testing
+
+ams:
+  local:
+    enabled: true
+    version: 1.2
+    keystore-path: /Users/ankitagarwal/fynarfin/ph-ee-dpg-connector-ams-mifos/src/main/resources/keystore.jks
+    keystore-password: openmf
+    interop:
+      host: https://fynams.sandbox.fynarfin.io/
+#      host: https://localhost:8443
+      base-url: /fineract-provider/api/v1
+      parties-path: ${ams.local.interop.base-url}/interoperation/parties/{idType}/{idValue}
+      transfers-path: ${ams.local.interop.base-url}/interoperation/transfers
+      accounts-path: ${ams.local.interop.base-url}/interoperation/accounts/{externalAccountId}
+    account:
+      host: https://localhost:8443
+      base-url: /fineract-provider/api/v1
+      savingsaccounts-path: ${ams.local.account.base-url}/savingsaccounts
+    auth:
+      host: https://localhost:8443
+
+mock-service:
+  local:
+    interop:
+      host: http://localhost:7070
+      base-url: /fineract
+      parties-path: ${mock-service.local.interop.base-url}/savingsaccount
+      transfers-path: ${mock-service.local.interop.base-url}/savingsaccount/transfers
+      accounts-path: ${mock-service.local.interop.base-url}/savingsaccount
+# Savings : S , Loan : L
+accountPrefixes: "S,L"

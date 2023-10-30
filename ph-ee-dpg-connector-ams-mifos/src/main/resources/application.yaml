@@ -1,0 +1,39 @@
+conductor:
+  server:
+    host: http://conductor-server.sandbox.fynarfin.io/api/
+
+camel:
+  server-port: 5000
+  springboot:
+    main-run-controller: true
+  dataformat:
+    json-jackson:
+      auto-discover-object-mapper: true
+
+dfspids: "lion"
+
+#ams:
+#  local:
+#    server-cert-check: false
+#    enabled: true
+
+ams:
+  local:
+    server-cert-check: false
+    enabled: true
+
+interop-party-registration:
+  enabled: false
+
+spring:
+  profiles:
+    active: "bb,fin12"
+  jackson:
+    date-format: org.mifos.connector.fineractstub.RFC3339DateFormat
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+
+server:
+  servlet:
+    contextPath: /fineract
+  port: 7070

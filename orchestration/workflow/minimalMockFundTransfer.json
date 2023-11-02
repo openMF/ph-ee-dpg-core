@@ -1,8 +1,6 @@
 {
-  "createTime": 1698350240603,
-  "updateTime": 1698612063245,
   "accessPolicy": {},
-  "name": "minimal_mock_fund_transfer.lion",
+  "name": "minimal_mock_fund_transfer.{{dfspid}}",
   "description": "Sample",
   "version": 1,
   "tasks": [

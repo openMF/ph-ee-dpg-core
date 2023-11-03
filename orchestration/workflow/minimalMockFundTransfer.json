@@ -1,0 +1,240 @@
+{
+  "accessPolicy": {},
+  "name": "minimal_mock_fund_transfer.{{dfspid}}",
+  "description": "Sample",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "initiate_input_params",
+      "taskReferenceName": "initiate_input_params",
+      "inputParameters": {
+        "channelRequest": "${workflow.input.channelRequest}",
+        "isRtpRequest": "${workflow.input.isRtpRequest}",
+        "initiator": "${workflow.input.initiator}",
+        "clientCorrelationId": "${workflow.input.clientCorrelationId}",
+        "customData": "${workflow.input.customData}",
+        "initiatorFspId": "${workflow.input.initiatorFspId}",
+        "batchId": "${workflow.input.batchId}",
+        "scenario": "${workflow.input.scenario}",
+        "specialTermination": "${workflow.input.specialTermination}",
+        "tenantId": "${workflow.input.tenantId}",
+        "currency": "${workflow.input.currency}",
+        "originDate": "${workflow.input.originDate}",
+        "initiatorType": "${workflow.input.initiatorType}"
+      },
+      "type": "SIMPLE",
+      "startDelay": 0,
+      "optional": false,
+      "asyncComplete": false
+    },
+    {
+      "name": "party_lookup",
+      "taskReferenceName": "party_lookup",
+      "inputParameters": {
+        "partyLookupFailed": false
+      },
+      "type": "SET_VARIABLE",
+      "startDelay": 0,
+      "optional": false,
+      "asyncComplete": false
+    },
+    {
+      "name": "partyLookupFailed",
+      "taskReferenceName": "partyLookupFailed",
+      "inputParameters": {
+        "partyLookupFailed": "${workflow.variables.partyLookupFailed}"
+      },
+      "type": "SWITCH",
+      "decisionCases": {
+        "true": [
+          {
+            "name": "terminate_task_2",
+            "taskReferenceName": "terminate_task_ref_2",
+            "inputParameters": {
+              "terminationStatus": "FAILED"
+            },
+            "type": "TERMINATE",
+            "startDelay": 0,
+            "optional": false,
+            "asyncComplete": false
+          }
+        ]
+      },
+      "defaultCase": [
+        {
+          "name": "block_funds",
+          "taskReferenceName": "block_funds",
+          "inputParameters": {
+            "channelRequest": "${workflow.input.channelRequest}",
+            "isRtpRequest": "${workflow.input.isRtpRequest}",
+            "initiator": "${workflow.input.initiator}",
+            "clientCorrelationId": "${workflow.input.clientCorrelationId}",
+            "customData": "${workflow.input.customData}",
+            "initiatorFspId": "${workflow.input.initiatorFspId}",
+            "batchId": "${workflow.input.batchId}",
+            "scenario": "${workflow.input.scenario}",
+            "specialTermination": "${workflow.input.specialTermination}",
+            "tenantId": "${workflow.input.tenantId}",
+            "currency": "${workflow.input.currency}",
+            "originDate": "${workflow.input.originDate}",
+            "initiatorType": "${workflow.input.initiatorType}"
+          },
+          "type": "SIMPLE",
+          "startDelay": 0,
+          "optional": false,
+          "asyncComplete": false
+        },
+        {
+          "name": "transferPrepareFailed",
+          "taskReferenceName": "transferPrepareFailed",
+          "inputParameters": {
+            "transferPrepareFailed": "${block_funds.output.transferPrepareFailed}"
+          },
+          "type": "SWITCH",
+          "decisionCases": {
+            "true": [
+              {
+                "name": "terminate_task_1",
+                "taskReferenceName": "terminate_task_ref_1",
+                "inputParameters": {
+                  "terminationStatus": "FAILED"
+                },
+                "type": "TERMINATE",
+                "startDelay": 0,
+                "optional": false,
+                "asyncComplete": false
+              }
+            ]
+          },
+          "defaultCase": [
+            {
+              "name": "transfer_request",
+              "taskReferenceName": "transfer_request",
+              "inputParameters": {
+                "transactionFailed": false
+              },
+              "type": "SET_VARIABLE",
+              "startDelay": 0,
+              "optional": false,
+              "asyncComplete": false
+            },
+            {
+              "name": "transferFailed",
+              "taskReferenceName": "transferFailed",
+              "inputParameters": {
+                "transferFailed": "${workflow.variables.transactionFailed}"
+              },
+              "type": "SWITCH",
+              "decisionCases": {
+                "true": [
+                  {
+                    "name": "release_block",
+                    "taskReferenceName": "release_block",
+                    "inputParameters": {},
+                    "type": "SIMPLE",
+                    "startDelay": 0,
+                    "optional": false,
+                    "asyncComplete": false
+                  },
+                  {
+                    "name": "terminate_task",
+                    "taskReferenceName": "terminate_task_ref",
+                    "inputParameters": {
+                      "terminationStatus": "TERMINATED"
+                    },
+                    "type": "TERMINATE",
+                    "startDelay": 0,
+                    "optional": false,
+                    "asyncComplete": false
+                  }
+                ]
+              },
+              "defaultCase": [
+                {
+                  "name": "book_funds",
+                  "taskReferenceName": "book_funds",
+                  "inputParameters": {
+                    "channelRequest": "${workflow.input.channelRequest}",
+                    "isRtpRequest": "${workflow.input.isRtpRequest}",
+                    "initiator": "${workflow.input.initiator}",
+                    "clientCorrelationId": "${workflow.input.clientCorrelationId}",
+                    "customData": "${workflow.input.customData}",
+                    "initiatorFspId": "${workflow.input.initiatorFspId}",
+                    "batchId": "${workflow.input.batchId}",
+                    "scenario": "${workflow.input.scenario}",
+                    "specialTermination": "${workflow.input.specialTermination}",
+                    "tenantId": "${workflow.input.tenantId}",
+                    "currency": "${workflow.input.currency}",
+                    "originDate": "${workflow.input.originDate}",
+                    "initiatorType": "${workflow.input.initiatorType}",
+                    "transferCode": "${block_funds.output.transferCode}"
+                  },
+                  "type": "SIMPLE",
+                  "startDelay": 0,
+                  "optional": false,
+                  "asyncComplete": false
+                },
+                {
+                  "name": "transferCreateFailed",
+                  "taskReferenceName": "transferCreateFailed",
+                  "inputParameters": {
+                    "transferCreateFailed": "${block_funds.output.transferCreateFailed}"
+                  },
+                  "type": "SWITCH",
+                  "decisionCases": {
+                    "true": [
+                      {
+                        "name": "terminate_task_3",
+                        "taskReferenceName": "terminate_task_ref_3",
+                        "inputParameters": {
+                          "terminationStatus": "FAILED"
+                        },
+                        "type": "TERMINATE",
+                        "startDelay": 0,
+                        "optional": false,
+                        "asyncComplete": false
+                      }
+                    ]
+                  },
+                  "startDelay": 0,
+                  "optional": false,
+                  "asyncComplete": false,
+                  "evaluatorType": "value-param",
+                  "expression": "transferCreateFailed"
+                }
+              ],
+              "startDelay": 0,
+              "optional": false,
+              "asyncComplete": false,
+              "evaluatorType": "value-param",
+              "expression": "transferFailed"
+            }
+          ],
+          "startDelay": 0,
+          "optional": false,
+          "asyncComplete": false,
+          "evaluatorType": "value-param",
+          "expression": "transferPrepareFailed"
+        }
+      ],
+      "startDelay": 0,
+      "optional": false,
+      "asyncComplete": false,
+      "evaluatorType": "value-param",
+      "expression": "partyLookupFailed"
+    }
+  ],
+  "inputParameters": [],
+  "outputParameters": {
+    "sum": "${workflow.output.sum}"
+  },
+  "failureWorkflow": "",
+  "schemaVersion": 2,
+  "restartable": true,
+  "workflowStatusListenerEnabled": true,
+  "ownerEmail": "ankit@fynarfin.io",
+  "timeoutPolicy": "ALERT_ONLY",
+  "timeoutSeconds": 0,
+  "variables": {},
+  "inputTemplate": {}
+}

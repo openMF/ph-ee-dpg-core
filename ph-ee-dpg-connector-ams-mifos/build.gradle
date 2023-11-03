@@ -1,0 +1,211 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'eclipse'
+    id 'checkstyle'
+    id 'org.springframework.boot' version '2.1.9.RELEASE'
+    id 'com.diffplug.spotless' version '6.19.0'
+}
+
+//configurations {
+//    compileOnly {
+//        extendsFrom annotationProcessor
+//    }
+//}
+
+repositories {
+    mavenLocal()
+    maven {
+        url = uri('https://repo.maven.apache.org/maven2')
+    }
+
+    maven {
+        url = uri('https://jfrog.sandbox.fynarfin.io/artifactory/fyn-libs-snapshot')
+    }
+}
+
+apply plugin:'com.diffplug.spotless'
+spotless {
+    format 'misc', {
+        target '**/*.md', '**/*.properties', '**/.gitignore', '**/.openapi-generator-ignore', '**/*.yml', '**/*.xml', '**/**.json', '**/*.sql'
+        targetExclude '**/build/**', '**/bin/**', '**/.settings/**', '**/.idea/**', '**/.gradle/**', '**/gradlew.bat', '**/licenses/**', '**/banner.txt', '.vscode/**'
+        indentWithSpaces(4)
+        endWithNewline()
+        trimTrailingWhitespace()
+    }
+
+    groovyGradle {
+        target '*.gradle', '**/*.gradle'
+        targetExclude '**/build/**'
+        greclipse()
+        indentWithSpaces(4)
+        endWithNewline()
+        trimTrailingWhitespace()
+    }
+
+    lineEndings 'UNIX'
+}
+
+dependencies {
+
+    implementation 'org.mifos:ph-ee-connector-common:1.5.1-SNAPSHOT'
+    implementation 'com.sun.xml.ws:jaxws-ri:2.3.2'
+    implementation 'org.apache.camel.springboot:camel-spring-boot-starter:3.4.0'
+    implementation 'org.apache.camel:camel-endpointdsl:3.4.0'
+    implementation 'org.apache.camel:camel-undertow:3.4.0'
+    implementation 'org.apache.camel:camel-cxf:3.4.0'
+    implementation 'org.apache.camel.springboot:camel-jackson-starter:3.4.0'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.6.0'
+    implementation 'org.json:json:20210307'
+    implementation 'org.apache.cxf:cxf-rt-rs-client:3.2.5'
+    implementation 'org.apache.cxf:cxf-rt-frontend-jaxrs:3.2.5'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.2.2.RELEASE'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    //	conductor dependencies
+    implementation 'com.netflix.conductor:conductor-common:3.13.8'
+    implementation 'com.netflix.conductor:conductor-client:3.13.8'
+
+    checkstyle 'com.puppycrawl.tools:checkstyle:10.9.3'
+    checkstyle 'com.github.sevntu-checkstyle:sevntu-checks:1.44.1'
+    implementation 'com.diffplug.gradle.spotless:spotless:2.4.1'
+    implementation 'com.diffplug.spotless:spotless-plugin-gradle:6.17.0'
+    implementation "org.springframework.boot:spring-boot-starter-web:2.1.9.RELEASE"
+    implementation "org.springframework.boot:spring-boot-starter-tomcat:2.1.9.RELEASE"
+    implementation "com.github.joschi.jackson:jackson-datatype-threetenbp:2.6.4"
+    implementation "javax.validation:validation-api:*"
+    implementation "org.springframework.plugin:spring-plugin-core:2.0.0.RELEASE"
+}
+
+configure(this) {
+    // NOTE: order matters!
+    apply plugin: 'java'
+    apply plugin: 'idea'
+    apply plugin: 'eclipse'
+    apply plugin: 'checkstyle'
+    configurations {
+        implementation.setCanBeResolved(true)
+        api.setCanBeResolved(true)
+    }
+    tasks.withType(JavaCompile) {
+        options.compilerArgs += [
+            "-Xlint:unchecked",
+            "-Xlint:cast",
+            "-Xlint:auxiliaryclass",
+            "-Xlint:deprecation",
+            "-Xlint:dep-ann",
+            "-Xlint:divzero",
+            "-Xlint:empty",
+            "-Xlint:exports",
+            "-Xlint:fallthrough",
+            "-Xlint:finally",
+            "-Xlint:module",
+            "-Xlint:opens",
+            "-Xlint:options",
+            "-Xlint:overloads",
+            "-Xlint:overrides",
+            "-Xlint:path",
+            "-Xlint:processing",
+            "-Xlint:removal",
+            "-Xlint:requires-automatic",
+            "-Xlint:requires-transitive-automatic",
+            "-Xlint:try",
+            "-Xlint:varargs",
+            "-Xlint:preview",
+            "-Xlint:static",
+            // -Werror needs to be disabled because EclipseLink's static weaving doesn't generate warning-free code
+            // and during an IntelliJ recompilation, it fails
+            //"-Werror",
+            "-Xmaxwarns",
+            1500,
+            "-Xmaxerrs",
+            1500
+        ]
+        options.deprecation = true
+    }
+    // Configuration for the spotless plugin
+    // https://github.com/diffplug/spotless/tree/main/plugin-gradle
+    spotless {
+        java {
+            targetExclude '**/build/**', '**/bin/**', '**/out/**'
+            importOrder() //sort imports alphabetically
+            removeUnusedImports()
+            eclipse().configFile "$rootDir/config/formatter.xml"
+            endWithNewline()
+            trimTrailingWhitespace()
+            // Enforce style modifier order
+            custom 'Modifier ordering', {
+                def modifierRanking = [
+                    public      : 1,
+                    protected   : 2,
+                    private     : 3,
+                    abstract    : 4,
+                    default     : 5,
+                    static      : 6,
+                    final       : 7,
+                    transient   : 8,
+                    volatile    : 9,
+                    synchronized: 10,
+                    native      : 11,
+                    strictfp    : 12]
+                // Find any instance of multiple modifiers. Lead with a non-word character to avoid
+                // accidental matching against for instance, "an alternative default value"
+                it.replaceAll(/\W(?:public |protected |private |abstract |default |static |final |transient |volatile |synchronized |native |strictfp ){2,}/, {
+                    // Do not replace the leading non-word character.  Identify the modifiers
+                    it.replaceAll(/(?:public |protected |private |abstract |default |static |final |transient |volatile |synchronized |native |strictfp ){2,}/, {
+                        // Sort the modifiers according to the ranking above
+                        it.split().sort({ modifierRanking[it] }).join(' ') + ' '
+                    }
+                    )
+                }
+                )
+            }
+        }
+        lineEndings 'UNIX'
+    }
+    // If we are running Gradle within Eclipse to enhance classes,
+    // set the classes directory to point to Eclipse's default build directory
+    if (project.hasProperty('env') && project.getProperty('env') == 'eclipse') {
+        sourceSets.main.java.outputDir = file("$projectDir/bin/main")
+    }
+    // Configuration for the Checkstyle plugin
+    // https://docs.gradle.org/current/userguide/checkstyle_plugin.html
+    dependencies {
+        checkstyle 'com.puppycrawl.tools:checkstyle:10.3.1'
+        checkstyle 'com.github.sevntu-checkstyle:sevntu-checks:1.42.0'
+    }
+}
+
+configurations {
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+}
+
+
+checkstyle {
+    checkstyleMain.exclude '**/gsmastub/**'
+}
+
+group = 'org.mifos'
+version = '1.0.0-SNAPSHOT'
+sourceCompatibility = '11'
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

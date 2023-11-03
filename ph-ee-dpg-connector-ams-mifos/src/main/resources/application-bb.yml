@@ -1,0 +1,19 @@
+ams:
+  local:
+    interop:
+      host: https://rhino.mifos.io:8443
+    customer:
+      host: https://rhino.mifos.io:8443
+    account:
+      host: https://rhino.mifos.io:8443
+    auth:
+      host: https://rhino.mifos.io:8443
+    tenants:
+      - name: "lion"
+        user: mifos
+        password: password
+        authtype: basic
+        fspId: in02tn04
+
+# Savings : S , Loan : L
+accountPrefixes: "S,L"
